@@ -78,7 +78,7 @@ pub async fn register(
 
 pub async fn login(
     sock: &mut crate::sock::Sock,
-    state: std::sync::Arc<tokio::sync::Mutex<crate::agent::State>>,
+    state: std::sync::Arc<tokio::sync::Mutex<crate::state::State>>,
     environment: &rbw::protocol::Environment,
 ) -> anyhow::Result<()> {
     let db = load_db().await.unwrap_or_else(|_| rbw::db::Db::new());
@@ -306,7 +306,7 @@ async fn two_factor(
 }
 
 async fn login_success(
-    state: std::sync::Arc<tokio::sync::Mutex<crate::agent::State>>,
+    state: std::sync::Arc<tokio::sync::Mutex<crate::state::State>>,
     access_token: String,
     refresh_token: String,
     kdf: rbw::api::KdfType,
@@ -362,7 +362,7 @@ async fn login_success(
 
 pub async fn unlock(
     sock: &mut crate::sock::Sock,
-    state: std::sync::Arc<tokio::sync::Mutex<crate::agent::State>>,
+    state: std::sync::Arc<tokio::sync::Mutex<crate::state::State>>,
     environment: &rbw::protocol::Environment,
 ) -> anyhow::Result<()> {
     if state.lock().await.needs_unlock() {
@@ -452,7 +452,7 @@ pub async fn unlock(
 }
 
 async fn unlock_success(
-    state: std::sync::Arc<tokio::sync::Mutex<crate::agent::State>>,
+    state: std::sync::Arc<tokio::sync::Mutex<crate::state::State>>,
     keys: rbw::locked::Keys,
     org_keys: std::collections::HashMap<String, rbw::locked::Keys>,
 ) -> anyhow::Result<()> {
@@ -464,7 +464,7 @@ async fn unlock_success(
 
 pub async fn lock(
     sock: &mut crate::sock::Sock,
-    state: std::sync::Arc<tokio::sync::Mutex<crate::agent::State>>,
+    state: std::sync::Arc<tokio::sync::Mutex<crate::state::State>>,
 ) -> anyhow::Result<()> {
     state.lock().await.clear();
 
@@ -475,7 +475,7 @@ pub async fn lock(
 
 pub async fn check_lock(
     sock: &mut crate::sock::Sock,
-    state: std::sync::Arc<tokio::sync::Mutex<crate::agent::State>>,
+    state: std::sync::Arc<tokio::sync::Mutex<crate::state::State>>,
 ) -> anyhow::Result<()> {
     if state.lock().await.needs_unlock() {
         return Err(anyhow::anyhow!("agent is locked"));
@@ -488,7 +488,7 @@ pub async fn check_lock(
 
 pub async fn sync(
     sock: Option<&mut crate::sock::Sock>,
-    state: std::sync::Arc<tokio::sync::Mutex<crate::agent::State>>,
+    state: std::sync::Arc<tokio::sync::Mutex<crate::state::State>>,
 ) -> anyhow::Result<()> {
     let mut db = load_db().await?;
 
@@ -530,7 +530,7 @@ pub async fn sync(
 
 pub async fn decrypt(
     sock: &mut crate::sock::Sock,
-    state: std::sync::Arc<tokio::sync::Mutex<crate::agent::State>>,
+    state: std::sync::Arc<tokio::sync::Mutex<crate::state::State>>,
     cipherstring: &str,
     entry_key: Option<&str>,
     org_id: Option<&str>,
@@ -569,7 +569,7 @@ pub async fn decrypt(
 
 pub async fn encrypt(
     sock: &mut crate::sock::Sock,
-    state: std::sync::Arc<tokio::sync::Mutex<crate::agent::State>>,
+    state: std::sync::Arc<tokio::sync::Mutex<crate::state::State>>,
     plaintext: &str,
     org_id: Option<&str>,
 ) -> anyhow::Result<()> {
@@ -593,7 +593,7 @@ pub async fn encrypt(
 #[cfg(feature = "clipboard")]
 pub async fn clipboard_store(
     sock: &mut crate::sock::Sock,
-    state: std::sync::Arc<tokio::sync::Mutex<crate::agent::State>>,
+    state: std::sync::Arc<tokio::sync::Mutex<crate::state::State>>,
     text: &str,
 ) -> anyhow::Result<()> {
     let mut state = state.lock().await;
@@ -611,7 +611,7 @@ pub async fn clipboard_store(
 #[cfg(not(feature = "clipboard"))]
 pub async fn clipboard_store(
     sock: &mut crate::sock::Sock,
-    _state: std::sync::Arc<tokio::sync::Mutex<crate::agent::State>>,
+    _state: std::sync::Arc<tokio::sync::Mutex<crate::state::State>>,
     _text: &str,
 ) -> anyhow::Result<()> {
     sock.send(&rbw::protocol::Response::Error {
@@ -698,7 +698,7 @@ async fn config_pinentry() -> anyhow::Result<String> {
 }
 
 pub async fn subscribe_to_notifications(
-    state: std::sync::Arc<tokio::sync::Mutex<crate::agent::State>>,
+    state: std::sync::Arc<tokio::sync::Mutex<crate::state::State>>,
 ) -> anyhow::Result<()> {
     if state.lock().await.notifications_handler.is_connected() {
         return Ok(());
