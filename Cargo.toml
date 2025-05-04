@@ -69,6 +69,8 @@ uuid = { version = "1.11.0", features = ["v4"] }
 zeroize = "1.8.1"
 
 arboard = { version = "3.4", default-features = false, features = ["wayland-data-control"], optional = true }
+ssh-agent-lib = "0.5.1"
+signature = "2.2.0"
 
 [features]
 default = ["clipboard"]

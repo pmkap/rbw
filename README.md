@@ -1,5 +1,22 @@
 # rbw
 
+## SSH Agent
+
+### TODO
+* Implement RSA
+* Option to disable ssh agent
+* Test different cases (RSA, ED25519, bitwarden.com, vaultwarden, ssh clients,
+  etc.)
+* Documentation
+* Catch this error for unsupported Proto(UnsupportedCommand { command: 27 })
+
+### Usage
+
+Just point to your ssh client to the ssh agent socket at
+`$XDG_RUNTIME_DIR/rbw/ssh-agent-socket` and run rbw as usual.
+
+## Overview
+
 This is an unofficial command line client for
 [Bitwarden](https://bitwarden.com/). Although it does come with its own
 [command line client](https://help.bitwarden.com/article/cli/), this client is
