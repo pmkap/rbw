@@ -795,3 +795,43 @@ pub async fn get_ssh_public_keys(
 
     Ok(pubkeys)
 }
+
+pub async fn find_ssh_private_key(
+    state: std::sync::Arc<tokio::sync::Mutex<crate::state::State>>,
+    pubkey: String,
+) -> anyhow::Result<String> {
+    let db = load_db().await?;
+
+    for entry in db.entries {
+        if let rbw::db::EntryData::SshKey { private_key, public_key, .. } = &entry.data {
+            let public_key_enc = match public_key {
+                Some(key) => key,
+                None => continue,
+            };
+
+            let public_key_plaintext = decrypt_cipher(
+                state.clone(),
+                public_key_enc,
+                entry.key.as_deref(),
+                entry.org_id.as_deref(),
+            ).await?;
+
+            if public_key_plaintext == pubkey {
+                let private_key_enc = private_key
+                    .as_ref()
+                    .ok_or_else(|| anyhow::anyhow!("Matching entry has no private key"))?;
+
+                let private_key_plaintext = decrypt_cipher(
+                    state.clone(),
+                    private_key_enc,
+                    entry.key.as_deref(),
+                    entry.org_id.as_deref(),
+                ).await?;
+
+                return Ok(private_key_plaintext);
+            }
+        }
+    }
+
+    Err(anyhow::anyhow!("No matching private key found"))
+}
